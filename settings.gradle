@@ -6,7 +6,5 @@ pluginManagement {
     }
 }
 
-
-
 rootProject.name = "BieganieAplikacja"
 include ':app'

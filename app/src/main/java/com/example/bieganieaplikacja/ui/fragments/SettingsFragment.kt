@@ -5,32 +5,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.bieganieaplikacja.R
 import com.example.bieganieaplikacja.databinding.FragmentSettingsBinding
 import com.example.bieganieaplikacja.other.Constants.KEY_NAME
 import com.example.bieganieaplikacja.other.Constants.KEY_WEIGHT
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsFragment : Fragment(R.layout.fragment_settings) {
+class SettingFragment : Fragment() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-
-    private var _binding: FragmentSettingsBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var binding: FragmentSettingsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        context ?: return binding.root
 
         return binding.root
     }
@@ -41,41 +39,39 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         binding.btnApplyChanges.setOnClickListener {
             val success = applyChangesToSharedPref()
             if (success) {
-                Snackbar.make(view, "Saved Changes", Snackbar.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Saved changes", Toast.LENGTH_SHORT).show()
+
             } else {
-                Snackbar.make(view, "Please enter all the fields", Snackbar.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Please fill out all the fields",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
+
 
     private fun loadFieldsFromSharedPref() {
         val name = sharedPreferences.getString(KEY_NAME, "")
         val weight = sharedPreferences.getFloat(KEY_WEIGHT, 80f)
         binding.etName.setText(name)
         binding.etWeight.setText(weight.toString())
-
     }
 
     private fun applyChangesToSharedPref(): Boolean {
-        val name = binding.etName.text.toString()
-        val weight = binding.etWeight.text.toString()
-
-        if (name.isEmpty() || weight.isEmpty()) {
+        val nameText = binding.etName.text.toString()
+        val weightText = binding.etWeight.text.toString()
+        if (nameText.isEmpty() || weightText.isEmpty()) {
             return false
         }
-
         sharedPreferences.edit()
-            .putString(KEY_NAME, name)
-            .putFloat(KEY_WEIGHT, weight.toFloat())
+            .putString(KEY_NAME, nameText)
+            .putFloat(KEY_WEIGHT, weightText.toFloat())
             .apply()
+        val toolbarText = "Let's go $nameText"
 
-        val toolbarText = "Let's go, $name!"
-        (requireActivity().findViewById(R.id.tvToolbarTitle) as MaterialTextView).text = toolbarText
+        requireActivity().findViewById<MaterialTextView>(R.id.tvToolbarTitle).text = toolbarText
         return true
-    }
-
-    override fun onDestroyView() {
-        _binding = null // Don't forget to recycle it or memory leaked.
-        super.onDestroyView()
     }
 }

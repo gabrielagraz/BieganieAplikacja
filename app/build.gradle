@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id "androidx.navigation.safeargs.kotlin"
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.android'
 
 
 }
@@ -14,10 +15,12 @@ android {
 
     defaultConfig {
         applicationId "com.example.bieganieaplikacja"
-        minSdk 21
+        minSdk 24
         targetSdk 33
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -30,10 +33,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = '1.8'
     }
     buildFeatures {
-        viewBinding  true
+        dataBinding true
+        viewBinding true
     }
 }
 dependencies {
@@ -83,7 +87,7 @@ dependencies {
     implementation "androidx.activity:activity-ktx:1.6.1"
 
     //Dagger - Hilt
-    implementation "com.google.dagger:hilt-android:2.44"
+    implementation "com.google.dagger:hilt-android:2.44.2"
     kapt "com.google.dagger:hilt-android-compiler:2.44"
 
 
@@ -98,4 +102,12 @@ dependencies {
 
     implementation 'android.arch.lifecycle:extensions:1.1.1'
 
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-service:2.5.1'
+    implementation"androidx.room:room-ktx:2.5.0"
+    implementation "io.coil-kt:coil:2.1.0"
+
+}
+kapt {
+    correctErrorTypes true
 }

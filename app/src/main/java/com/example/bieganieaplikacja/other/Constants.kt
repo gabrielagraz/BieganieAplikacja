@@ -1,9 +1,11 @@
 package com.example.bieganieaplikacja.other
 
+import android.app.PendingIntent
 import android.graphics.Color
+import android.os.Build
 
 object Constants {
-    const val RUNNING_DATABASE_NAME = "RunningDb.db"
+    const val RUNNING_DATABASE_NAME = "running.db"
     const val REQUEST_CODE_LOCATION_PERMISSION = 0
 
     const val ACTION_START_OR_RESUME_SERVICE = "ACTION_START_OR_RESUME_SERVICE"
@@ -13,7 +15,7 @@ object Constants {
 
     const val TIMER_UPDATE_INTERVAL = 50L
 
-    const val SHARED_PREFERENCES_NAME = "com.ad.fitness.master.sharedPref"
+    const val SHARED_PREFERENCES_NAME = "sharedPref"
     const val KEY_FIRST_TIME_TOGGLE = "KEY_FIRST_TIME_TOGGLE"
     const val KEY_NAME = "KEY_NAME"
     const val KEY_WEIGHT = "KEY_WEIGHT"
@@ -31,4 +33,9 @@ object Constants {
     const val NOTIFICATION_CHANNEL_ID = "Tracking Channel"
     const val NOTIFICATION_CHANNEL_NAME = "Tracking"
     const val NOTIFICATION_ID = 1
+
+    val flags = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        else -> PendingIntent.FLAG_UPDATE_CURRENT
+    }
 }

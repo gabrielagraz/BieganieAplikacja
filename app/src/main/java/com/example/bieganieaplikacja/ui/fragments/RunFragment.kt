@@ -1,7 +1,6 @@
 package com.example.bieganieaplikacja.ui.fragments
 
 import android.Manifest
-import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,52 +15,38 @@ import com.example.bieganieaplikacja.R
 import com.example.bieganieaplikacja.adapters.RunAdapter
 import com.example.bieganieaplikacja.databinding.FragmentRunBinding
 import com.example.bieganieaplikacja.ui.viewmodels.MainViewModel
-import com.example.bieganieaplikacja.other.Constants
 import com.example.bieganieaplikacja.other.Constants.REQUEST_CODE_LOCATION_PERMISSION
 import com.example.bieganieaplikacja.other.SortType
 import com.example.bieganieaplikacja.other.TrackingUtility
-import com.google.android.material.textview.MaterialTextView
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionCallbacks {
+
     private val viewModel: MainViewModel by viewModels()
-
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
-
     private lateinit var runAdapter: RunAdapter
+    private lateinit var binding: FragmentRunBinding
 
-    private var _binding: FragmentRunBinding? = null
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding = FragmentRunBinding.inflate(inflater, container, false)
+        binding = FragmentRunBinding.inflate(inflater, container, false)
+        context ?: return binding.root
 
 
         return binding.root
     }
 
-    private fun setupRecyclerView() = binding.rvRuns.apply {
-        runAdapter = RunAdapter()
-        adapter = runAdapter
-        layoutManager = LinearLayoutManager(requireContext())
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setUpToolbar()
-        requestPermissions()
-        setupRecyclerView()
+        requestPermission()
+        setUpRecyclerView()
 
         when (viewModel.sortType) {
             SortType.DATE -> binding.spFilter.setSelection(0)
@@ -72,8 +57,13 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         }
 
         binding.spFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                when (pos) {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                when (position) {
                     0 -> viewModel.sortRuns(SortType.DATE)
                     1 -> viewModel.sortRuns(SortType.RUNNING_TIME)
                     2 -> viewModel.sortRuns(SortType.DISTANCE)
@@ -85,30 +75,32 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
             override fun onNothingSelected(p0: AdapterView<*>?) {}
 
         }
-        viewModel.runs.observe(viewLifecycleOwner, {
-            runAdapter.submitList(it)
-        })
-
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
         }
+
+
+        viewModel.runs.observe(viewLifecycleOwner) {
+            runAdapter.submitList(it)
+        }
     }
 
-    private fun setUpToolbar() {
-        val name = sharedPreferences.getString(Constants.KEY_NAME, "")
-        val toolbarText = "Let's go, $name!"
-        (requireActivity().findViewById(R.id.tvToolbarTitle) as MaterialTextView?)?.text =
-            toolbarText
+    private fun setUpRecyclerView() = binding.rvRuns.apply {
+        runAdapter = RunAdapter()
+        adapter = runAdapter
+        layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun requestPermissions() {
+
+    private fun requestPermission() {
         if (TrackingUtility.hasLocationPermission(requireContext())) {
             return
         }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             EasyPermissions.requestPermissions(
                 this,
-                "You need to accept permission to use this app",
+                "You Need To Accept Location Permissions To  Use This App.",
                 REQUEST_CODE_LOCATION_PERMISSION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -116,7 +108,7 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         } else {
             EasyPermissions.requestPermissions(
                 this,
-                "You need to accept permission to use this app",
+                "You Need To Accept Location Permissions To  Use This App.",
                 REQUEST_CODE_LOCATION_PERMISSION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -125,29 +117,25 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         }
     }
 
-
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {}
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+    override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
             AppSettingsDialog.Builder(this).build().show()
         } else {
-            requestPermissions()
+            requestPermission()
         }
     }
 
+    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {}
+
+    //registerForActivityResult
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        // EasyPermissions handles the request result.
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
-
-    override fun onDestroyView() {
-        _binding = null // Don't forget to recycle it or memory leaked.
-        super.onDestroyView()
-    }
-
 }

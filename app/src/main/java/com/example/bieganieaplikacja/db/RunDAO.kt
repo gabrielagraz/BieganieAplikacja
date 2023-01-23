@@ -7,10 +7,10 @@ import androidx.room.*
 @Dao
 interface RunDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertRun(run: Run)
+    suspend fun insertRun(run: Run)
 
     @Delete
-    fun deleteRun(run: Run)
+    suspend fun deleteRun(run: Run)
 
     @Query("SELECT * FROM running_table ORDER BY timestamp DESC")
     fun getAllRunsSortedByDate(): LiveData<List<Run>>
@@ -39,5 +39,4 @@ interface RunDao {
 
     @Query("SELECT SUM(avgSpeedInKMH) FROM running_table ")
     fun getTotalAvgSpeed(): LiveData<Float>
-
 }

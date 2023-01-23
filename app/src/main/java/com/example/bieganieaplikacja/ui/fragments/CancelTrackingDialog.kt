@@ -24,8 +24,8 @@ class CancelTrackingDialog : DialogFragment() {
                     yes()
                 }
             }
-            .setNegativeButton("No") { d, _ ->
-                d.cancel()
+            .setNegativeButton("No") { dialogInterface, _ ->
+                dialogInterface.cancel()
             }
             .create()
 
